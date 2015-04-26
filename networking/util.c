@@ -15,7 +15,7 @@ void prepare_hints(struct addrinfo *hints) {
 	*hints = ai;
 }
 
-void prepare_listening_socket(struct addrinfo *hints, const char *port, int *listener) {
+int prepare_listening_socket(struct addrinfo *hints, const char *port, int *listener) {
 	int rv;
 	int yes = 1;
 
@@ -23,7 +23,7 @@ void prepare_listening_socket(struct addrinfo *hints, const char *port, int *lis
 
 	if ((rv = getaddrinfo(NULL, port, hints, &ai)) != 0) {
 		fprintf(stderr, "server: %s\n", gai_strerror(rv));
-		exit(1);
+		return 1;
 	}
 
 	for (p = ai; p != NULL; p = p->ai_next) {
@@ -44,10 +44,21 @@ void prepare_listening_socket(struct addrinfo *hints, const char *port, int *lis
 
 	if (p == NULL) {
 		fprintf(stderr, "server: failed to bind\n");
-		exit(2);
+		return 2;
 	}
 
 	freeaddrinfo(ai);
+
+	return 0;
+}
+
+int select_read(int fdmax, fd_set *read_fds) {
+	if (select(fdmax, read_fds, NULL, NULL, NULL) == -1) {
+		perror("select");
+		return 1;
+	}
+
+	return 0;
 }
 
 void *get_in_addr(struct sockaddr *sa) {

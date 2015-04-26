@@ -43,9 +43,8 @@ int main (void) {
 
 	for (;;) {
 		read_fds = master;
-		if (select(fdmax+1, &read_fds, NULL, NULL, NULL) == -1) {
-			perror("select");
-			exit(4);
+		if (select_read(fdmax+1, &read_fds) != 0) {
+			continue;
 		}
 
 		for (i = 0; i <= fdmax; i++) {
